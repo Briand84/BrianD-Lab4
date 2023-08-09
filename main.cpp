@@ -15,7 +15,9 @@ static LSM6DSLSensor acc_gyro(&devI2c,0xD4,D4,D5); // high address
 static LIS3MDL magnetometer(&devI2c, 0x3C);
 static DigitalOut shutdown_pin(PC_6);
 static VL53L0X range(&devI2c, &shutdown_pin, PC_7, 0x52);
+static UnbufferedSerial pc(USBTX,USBRX);//unbuffered serial link to microcontroller to send & recieve data
 
+char inp_char = 0;
 
 // functions to print sensor data
 void print_t_rh(){
@@ -57,7 +59,9 @@ void print_distance(){
         printf("VL53L0X [mm]:                --\r\n");
     }
 }
-
+void pc_interrupt(){
+     char inp_char;//detects character pressed and prints it on screen
+}
 /* Simple main function */
 int main() {
     uint8_t id;
@@ -100,7 +104,33 @@ int main() {
     print_distance();
     printf("\r\n");
     
+    pc.attach(&pc_interrupt);
+
     while(1) {
+        switch(inp_char){
+        case 't':
+        print_t_rh();// prints temp & relative humidity when 't' is pressed on keyboard
+        inp_char=0;
+        break;
+        case 'm'://prints magnetometer data when 'm' is pressed on keyboard
+        print_mag();
+        inp_char=0;
+        break;
+        case 'a'://prints accelerometer data when 'a' is pressed on keyboard
+        print_accel();
+        inp_char=0;
+        break;
+        case 'g'://prints gyroscope data when 'g' is pressed on keyboard
+        print_gyro();
+        inp_char=0;
+        break;
+        case 'd'://prints distance from sensor when 'd'is pressed on keyboard
+        print_distance();
+        inp_char=0;
+        break;
+        default:// will not do anything if any other key is pressed
+        break;
+         }
         wait_us(500000);
     }
 }
